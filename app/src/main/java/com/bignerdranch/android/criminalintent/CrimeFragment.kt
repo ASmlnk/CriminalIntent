@@ -31,6 +31,7 @@ class CrimeFragment: Fragment() {
         super.onCreate(savedInstanceState)
         crime = Crime()
         val crimeId: UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
+        // пришел из хост активити через функцию newInstance(crimeId: UUID)
         crimeDetailViewModel.loadCrime(crimeId)
     }
 
@@ -55,7 +56,8 @@ class CrimeFragment: Fragment() {
             crime?.let {
                 this.crime = crime
                 updateUI()
-            }
+            }   //наблюдаем за ЛД, придет объект crime из БД по id и
+                // с помощью updateUI заполним представление
         })
     }
 
@@ -92,7 +94,7 @@ class CrimeFragment: Fragment() {
         dateButton.text = crime.date.toString()
         solvedCheckBox.apply {
             isChecked = crime.isSolved
-            jumpDrawablesToCurrentState()
+            jumpDrawablesToCurrentState()  //пропуск анимации флажка при повароте экрана
         }
     }
 
