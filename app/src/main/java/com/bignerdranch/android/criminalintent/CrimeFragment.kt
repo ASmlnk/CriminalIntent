@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.bignerdranch.android.criminalintent
 
 import android.os.Bundle
@@ -16,8 +18,10 @@ import java.util.*
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
+private const val DIALOG_DATE = "DialogDate"
+private const val REQUEST_DATE = 0
 
-class CrimeFragment: Fragment() {
+class CrimeFragment: Fragment(), DatePickerFragment.Callbacks {
 
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
@@ -42,10 +46,17 @@ class CrimeFragment: Fragment() {
         dateButton = view.findViewById(R.id.crime_date) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
 
-        dateButton.apply {
+        dateButton.setOnClickListener {
+            DatePickerFragment.newInstance(crime.date).apply {           //передаем дату а диологовое окно
+            setTargetFragment(this@CrimeFragment, REQUEST_DATE)  //назначаем CrimeFragment целевым фрагментом для DPF
+            show(this@CrimeFragment.requireFragmentManager() , DIALOG_DATE)
+            }                                                     //появляется диалоговое окно с выбором даты
+        }
+
+        /*dateButton.apply {         Блокировка кнопки
             text = crime.date.toString()
             isEnabled = false
-        }
+        }*/
 
         return view
     }
@@ -108,5 +119,10 @@ class CrimeFragment: Fragment() {
                 arguments = args
             }
         }
+    }
+
+    override fun onDateSelected(date: Date) {   //Реализация интерфейса Callbacks из DPF
+        crime.date = date
+        updateUI()
     }
 }
