@@ -20,7 +20,7 @@ class CrimeListFragment: Fragment() {
 
     interface Callbacks {
         fun onCrimeSelected(crimeId: UUID)
-    }
+    } //реализация в хост-активити
 
     private var callbacks: Callbacks? = null
     private lateinit var crimeRecyclerView: RecyclerView
@@ -37,7 +37,7 @@ class CrimeListFragment: Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        setHasOptionsMenu(true)  // добавление панели меню
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -67,7 +67,7 @@ class CrimeListFragment: Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_crime_list, menu)
-    }
+    }  //заполнение ресурса меню
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -77,9 +77,9 @@ class CrimeListFragment: Fragment() {
                 callbacks?.onCrimeSelected(crime.id)
                 true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)  //обратный вызов через хост-активити
         }
-    }
+    }  //реакция на выбор команды меню
 
     private fun updateUI(crimes: List<Crime>) {
         adapter = CrimeAdapter(crimes)

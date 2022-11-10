@@ -121,7 +121,6 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     }
 
     companion object {
-
         fun newInstance(crimeId: UUID): CrimeFragment {
             val args = Bundle().apply {
                 putSerializable(ARG_CRIME_ID, crimeId)
@@ -132,11 +131,10 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         }
     }
 
-    override fun onDateSelected(date: Date) {   //Реализация интерфейса Callbacks из DPF
+    override fun onDateSelected(date: Date) {
         crime.date = date
         updateUI()
-    }
-
+    }  //Реализация интерфейса Callbacks из DPF
     override fun onTimeSelected(time: Date) {
         crime.date = time
         updateUI()
