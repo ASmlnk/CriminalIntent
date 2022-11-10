@@ -4,7 +4,9 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -24,6 +26,8 @@ class CrimeListFragment: Fragment() {
 
     private var callbacks: Callbacks? = null
     private lateinit var crimeRecyclerView: RecyclerView
+    private lateinit var textEmptyListCrime: TextView
+    private lateinit var buttonNewCrime: Button
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
     private val crimeListViewModel : CrimeListViewModel by lazy {
@@ -41,11 +45,21 @@ class CrimeListFragment: Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
+        val view = inflater.inflate(R.layout.empty_list_crime, container, false)
+        /*val view = inflater.inflate(R.layout.fragment_crime_list, container, false)*/
 
+        textEmptyListCrime = view.findViewById(R.id.empty_list) as TextView
+        buttonNewCrime = view.findViewById(R.id.button_new_crime) as Button
         crimeRecyclerView = view.findViewById(R.id.crime_recycler_view) as RecyclerView
+
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         crimeRecyclerView.adapter = adapter
+        buttonNewCrime.setOnClickListener {
+            val crime = Crime()
+            crimeListViewModel.addCrime(crime)
+            callbacks?.onCrimeSelected(crime.id)
+        }
+
         return view
     }
 
@@ -84,6 +98,13 @@ class CrimeListFragment: Fragment() {
     private fun updateUI(crimes: List<Crime>) {
         adapter = CrimeAdapter(crimes)
         crimeRecyclerView.adapter = adapter
+        if (crimes.isEmpty()) {
+            textEmptyListCrime.visibility = View.VISIBLE
+            buttonNewCrime.visibility = View.VISIBLE
+        } else {
+            textEmptyListCrime.visibility = View.GONE
+            buttonNewCrime.visibility = View.GONE
+        }
     }
 
     private inner class CrimeHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener {

@@ -17,7 +17,10 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
 
         if (currentFragment == null) {
             val fragment = CrimeListFragment.newInstance()
-            supportFragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit()
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container, fragment)
+                .commit()
         }
     }
 
@@ -25,7 +28,7 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
         val fragment = CrimeFragment.newInstance(crimeId)
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, fragment)  //заменяет фрагмент, если add то дабовляет
+            .replace(R.id.fragment_container, fragment)  //заменяет фрагмент, если add то дабавляет
             .addToBackStack(null)
             .commit()
     } //Реализация функции интерфейса Callbacks из CrimeListFragment
