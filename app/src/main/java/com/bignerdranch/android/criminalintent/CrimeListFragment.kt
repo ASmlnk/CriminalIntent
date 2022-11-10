@@ -51,7 +51,7 @@ class CrimeListFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        crimeListViewModel.crimeListLiveData.observe(viewLifecycleOwner, Observer {crimes ->
+        crimeListViewModel.crimeListLiveData.observe(viewLifecycleOwner, Observer{crimes ->
             crimes?.let {
                 Log.i(TAG, "Got crimes ${crimes.size}")
                 updateUI(crimes)
