@@ -5,12 +5,10 @@ class Zadanie1 {
     fun ticketCheck (ticketNumber: Int): Boolean {
         val numberLength = ticketNumber.toString().length
 
-        if (numberLength < 2) {
-            throw IllegalArgumentException ("Номер билета должен иметь не менне двух цифр")
-        } else if (numberLength > 8) {
-            throw IllegalArgumentException ("Номер билета не должен иметь более восьми цифр")
-        } else if (numberLength % 2 != 0) {
-            throw IllegalArgumentException("Номер билета должен состоять из четного числа цифр")
+        when {
+            numberLength < 2 -> throw IllegalArgumentException ("Номер билета должен иметь не менне двух цифр")
+            numberLength > 8 -> throw IllegalArgumentException ("Номер билета не должен иметь более восьми цифр")
+            numberLength % 2 != 0 -> throw IllegalArgumentException("Номер билета должен состоять из четного числа цифр")
         }
 
         val listNumber: MutableList<Int> = mutableListOf()
