@@ -34,4 +34,4 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
     } //Реализация функции интерфейса Callbacks из CrimeListFragment
 }
 
-//ghp_iTbJ04RFAPlHXkOtS8bCIRb5nPStGJ0ax
+//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
