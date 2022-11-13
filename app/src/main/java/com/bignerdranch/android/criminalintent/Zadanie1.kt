@@ -17,5 +17,4 @@ class Zadanie1 {
         val result = listNumber.chunked(numberLength/2) { it.sum() }
         return result.first() == result.last()
     }
-
 }
