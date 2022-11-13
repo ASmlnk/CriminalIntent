@@ -64,6 +64,6 @@ class CargoPassengerTransport(override val brand: String,
     override val orders: MutableList<Order> = mutableListOf()
     val remainingNumberOfSeats: Int = numberOfSeats
     val remainingCarryingCapacity: Int = carryingCapacity
-
+    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
 }
 
