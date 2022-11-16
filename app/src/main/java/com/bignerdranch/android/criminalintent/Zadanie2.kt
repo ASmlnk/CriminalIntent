@@ -231,42 +231,52 @@ class CargoPassengerTransport(_brand: String,
 }
 
 
-val order1 = Order("Заказ1", "Минск", "Гомель", cargoWeightKg = 2450, cargoType = "Продукты" )
-val order2 = Order("Заказ2", "Минск", "Гомель", cargoWeightKg = 3600, cargoType = "Продукты" )
-val order3 = Order("Заказ3", "Минск", "Могилев", cargoWeightKg = 5450, cargoType = "Промтовары" )
-val order4 = Order("Заказ4", "Гродно", "Минск", cargoWeightKg = 7000, cargoType = "Песок" )
-val order5 = Order("Заказ5", "Минск", "Молодечно", cargoWeightKg = 8000, cargoType = "Щебень" )
-val order6 = Order("Заказ6", "Минск", "Гомель", numberOfPassengers = 5)
-val order7 = Order("Заказ7", "Гомель", "Жлобин", numberOfPassengers = 45)
-val order8 = Order("Заказ8", "Светлогорск", "Гомель", numberOfPassengers = 55)
-val order9 = Order("Заказ9", "Минск", "Гомель", cargoWeightKg = 1450, numberOfPassengers = 2 )
-val order10 = Order("Заказ10", "Минск", "Гомель", cargoWeightKg = 750, numberOfPassengers = 4 )
+    val order1 = Order("Заказ1", "Минск", "Гомель", cargoWeightKg = 2450, cargoType = "Продукты" )
+    val order2 = Order("Заказ2", "Минск", "Гомель", cargoWeightKg = 3600, cargoType = "Продукты" )
+    val order3 = Order("Заказ3", "Минск", "Могилев", cargoWeightKg = 5450, cargoType = "Промтовары" )
+    val order4 = Order("Заказ4", "Гродно", "Минск", cargoWeightKg = 7000, cargoType = "Песок" )
+    val order5 = Order("Заказ5", "Минск", "Молодечно", cargoWeightKg = 8000, cargoType = "Щебень" )
+    val order6 = Order("Заказ6", "Минск", "Гомель", numberOfPassengers = 5)
+    val order7 = Order("Заказ7", "Гомель", "Жлобин", numberOfPassengers = 45)
+    val order8 = Order("Заказ8", "Светлогорск", "Гомель", numberOfPassengers = 55)
+    val order9 = Order("Заказ9", "Минск", "Гомель", cargoWeightKg = 1450, numberOfPassengers = 2 )
+    val order10 = Order("Заказ10", "Минск", "Гомель", cargoWeightKg = 750, numberOfPassengers = 4 )
 
-val auto1 = FreightTransport("MAN", "TGX", 2016, "ДТ", 24.0, "Рефрижератор", 19000 )
-val auto2 = FreightTransport("Volvo", "FH16", 2012, "ДТ", 26.2, "Рефрижератор", 30000 )
-val auto3 = FreightTransport("Hyundai", "HD170", 2016, "ДТ", 25.0, "Тент", 11500 )
-val auto4 = FreightTransport("ГАЗ", "33023", 2016, "ГАЗ", 15.0, "Тент", 1200 )
-val auto5 = FreightTransport("Scania", "S730 V8", 2017, "ДТ", 42.0, "Цистерна", 40000 )
-val auto6 = FreightTransport("Volvo", "FM", 2018, "ДТ", 43.0, "Цистерна", 70000 )
-val auto7 = FreightTransport("КАМАЗ", "43118", 2005, "ДТ", 33.0, "Кузов", 10000 )
-val auto8 = FreightTransport("MAN", "TGS 8x4", 2018, "ДТ", 37.0, "Кузов", 27000 )
-val auto9 = PassengerTransport("Scania", "Irizar I6", 2016, "Дизель", 35.0,  55 )
-val auto10 = PassengerTransport("MAN", "Lion’s Coach", 2016, "Дизель", 37.0,  60 )
-val auto11 = PassengerTransport("Mercedes-Benz", "Sprinter", 2019, "Дизель", 14.0,  18 )
-val auto12 = CargoPassengerTransport("Volkswagen", "Crafter", 2016, "Дизель", 9.5, 2000, 4 )
-val auto13 = CargoPassengerTransport("Volkswagen", "Transporter T5 Kasten", 2019, "Дизель", 8.5, 1200, 4 )
-val auto14 = CargoPassengerTransport("Mercedes-Benz", "Vito", 2014, "Дизель", 9.0, 1300, 4)
+    val auto1 = FreightTransport("MAN", "TGX", 2016, "ДТ", 24.0, "Рефрижератор", 19000 )
+    val auto2 = FreightTransport("Volvo", "FH16", 2012, "ДТ", 26.2, "Рефрижератор", 30000 )
+    val auto3 = FreightTransport("Hyundai", "HD170", 2016, "ДТ", 25.0, "Тент", 11500 )
+    val auto4 = FreightTransport("ГАЗ", "33023", 2016, "ГАЗ", 15.0, "Тент", 1200 )
+    val auto5 = FreightTransport("Scania", "S730 V8", 2017, "ДТ", 42.0, "Цистерна", 40000 )
+    val auto6 = FreightTransport("Volvo", "FM", 2018, "ДТ", 43.0, "Цистерна", 70000 )
+    val auto7 = FreightTransport("КАМАЗ", "43118", 2005, "ДТ", 33.0, "Кузов", 10000 )
+    val auto8 = FreightTransport("MAN", "TGS 8x4", 2018, "ДТ", 37.0, "Кузов", 27000 )
+    val auto9 = PassengerTransport("Scania", "Irizar I6", 2016, "Дизель", 35.0,  55 )
+    val auto10 = PassengerTransport("MAN", "Lion’s Coach", 2016, "Дизель", 37.0,  60 )
+    val auto11 = PassengerTransport("Mercedes-Benz", "Sprinter", 2019, "Дизель", 14.0,  18 )
+    val auto12 = CargoPassengerTransport("Volkswagen", "Crafter", 2016, "Дизель", 9.5, 2000, 4 )
+    val auto13 = CargoPassengerTransport("Volkswagen", "Transporter T5 Kasten", 2019, "Дизель", 8.5, 1200, 4 )
+    val auto14 = CargoPassengerTransport("Mercedes-Benz", "Vito", 2014, "Дизель", 9.0, 1300, 4)
 
 val listOrder = listOf<Order>(order1, order2, order3, order4, order5, order6, order7, order8, order9, order10)
 val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, auto7, auto8, auto9, auto10, auto11, auto12, auto13, auto14)
 
 fun transportCategory (order: Order, transport: List<Transport>): List<Transport> {
-  val c =  if ((order.numberOfPassengers == null || order.numberOfPassengers == 0) && order.cargoWeightKg != null && order.cargoType != null) {
-      transport.filterIsInstance<FreightTransport>()
-  } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0) && order.cargoWeightKg == null && order.cargoType == null) {
+
+  val c =  if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
+                && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()) {
+      val list = transport.filterIsInstance<FreightTransport>()
+      when
+  } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
+                && (order.cargoWeightKg == null || order.cargoWeightKg == 0 ) && order.cargoType.isNullOrBlank()) {
       transport.filterIsInstance<PassengerTransport>()
-  } else {
+  } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
+                && (order.cargoWeightKg != null || order.cargoWeightKg != 0 ) && order.cargoType.isNullOrBlank()) {
       transport.filterIsInstance<CargoPassengerTransport>()
-  }
+  } else {
+      throw IllegalArgumentException("Неверно заполнен заказ")
+}
 return c
 }
+
+
+
