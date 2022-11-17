@@ -18,6 +18,7 @@ abstract class Transport {
     abstract val typeOfFuel: String  //тип топлива
     abstract val fuelConsumption: Double  //расход топлива
 
+
     abstract fun refuel()    //заправить
     abstract fun repair()    //отремонтировать
     abstract fun freePlace()
@@ -42,9 +43,15 @@ class FreightTransport(_brand: String,
     override val typeOfFuel = _typeOfFuel
     override val fuelConsumption = _fuelConsumption
     private val orders: MutableSet<Order> = mutableSetOf()
+            var listOrder: List<Order> = orders.toList()
+                get () = orders.toList()
+                private set
+
+
     var remainingCarryingCapacity: Int = carryingCapacity
         get() = carryingCapacity - orders.sumBy{ it.cargoWeightKg!! }
         private set
+
 
     override fun refuel() {
         println("Бак $brand $model полностью заправлен")
@@ -109,6 +116,10 @@ class PassengerTransport(_brand: String,
     override val typeOfFuel = _typeOfFuel
     override val fuelConsumption = _fuelConsumption
     private val orders: MutableSet<Order> = mutableSetOf()
+
+    var listOrder: List<Order> = orders.toList()
+        get () = orders.toList()
+        private set
     var remainingNumberOfSeats: Int = numberOfSeats
             get() = numberOfSeats - orders.sumBy{ it.numberOfPassengers!! }
         private set
@@ -175,6 +186,10 @@ class CargoPassengerTransport(_brand: String,
     override val typeOfFuel = _typeOfFuel
     override val fuelConsumption = _fuelConsumption
     private val orders: MutableSet<Order> = mutableSetOf()
+
+    var listOrder: List<Order> = orders.toList()
+        get () = orders.toList()
+        private set
     var remainingNumberOfSeats: Int = numberOfSeats
         get() = numberOfSeats - orders.sumBy{ it.numberOfPassengers!! }
         private set
@@ -262,13 +277,44 @@ val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, a
 
 fun transportCategory (order: Order, transport: List<Transport>): List<Transport> {
 
-  val c =  if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
+    val pendingOrders: MutableList<Order> = mutableListOf()
+
+
+
+  val selectedTransport =  if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
                 && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()) {
       val list = transport.filterIsInstance<FreightTransport>()
-      when
+      val selectedTransport = when (order.cargoType.capitalize()) {
+          "продукты" -> {
+              list.filter { it.bodyType.capitalize() == "рефрижератор" }
+                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                  .minByOrNull { it.remainingCarryingCapacity }
+          }
+          "песок", "щебень" -> {
+              list.filter { it.bodyType.capitalize() == "кузов" }
+                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                  .filter { it.listOrder.isNullOrEmpty() }
+                  .minByOrNull { it.remainingCarryingCapacity }
+          }
+          "молоко", "вода" -> {
+              list.filter { it.bodyType.capitalize() == "кузов" }
+                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                  .filter { it.listOrder.isNullOrEmpty() }
+                  .minByOrNull { it.remainingCarryingCapacity }
+          }
+          "промтовары", "стройиатериалы" -> {
+              list.filter { it.bodyType.capitalize() == "цистерна" }
+                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                  .minByOrNull { it.remainingCarryingCapacity }
+          }
+          else -> throw IllegalArgumentException("Мы не можем выполнить заказ ${order.name}")
+      }
+      return selectedTransport
+
   } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
                 && (order.cargoWeightKg == null || order.cargoWeightKg == 0 ) && order.cargoType.isNullOrBlank()) {
-      transport.filterIsInstance<PassengerTransport>()
+      val list = transport.filterIsInstance<PassengerTransport>()
+
   } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
                 && (order.cargoWeightKg != null || order.cargoWeightKg != 0 ) && order.cargoType.isNullOrBlank()) {
       transport.filterIsInstance<CargoPassengerTransport>()
