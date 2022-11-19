@@ -1,41 +1,36 @@
 package com.bignerdranch.android.criminalintent
 
-class Zadanie2 {
-}
+
 data class Order (val name: String,
-                  val startingPoint: String,      //начальная точка
+                  val startingPoint: String,
                   val endPoint: String,
-                //  val cargoVolumeM3: Int? = null,    //обьем груза
-                  val cargoWeightKg: Int? = null,     //вес груза
-                  val cargoType: String? = null,      //тип груза
-                  val numberOfPassengers: Int? = null) {    //количество пасажиров
+                  val cargoWeightKg: Int? = null,
+                  val cargoType: String? = null,
+                  val numberOfPassengers: Int? = null) {
 }
 
 abstract class Transport {
-    abstract val brand: String   //бренд
-    abstract val model: String   //модель
-    abstract val yearOfIssue: Int  //год выпуска
-    abstract val typeOfFuel: String  //тип топлива
-    abstract val fuelConsumption: Double  //расход топлива
+    abstract val brand: String
+    abstract val model: String
+    abstract val yearOfIssue: Int
+    abstract val typeOfFuel: String
+    abstract val fuelConsumption: Double
 
-
-    abstract fun refuel()    //заправить
-    abstract fun repair()    //отремонтировать
+    abstract fun refuel()
+    abstract fun repair()
     abstract fun freePlace()
-    abstract fun loadOrder (order: Order)  //разместить заказ
+    abstract fun loadOrder (order: Order)
     abstract fun unloadOrder (order: Order)
     abstract fun checkOrder ()
-
 }
 
-//грузовой транспорт
 class FreightTransport(_brand: String,
                        _model: String,
                        _yearOfIssue: Int,
                        _typeOfFuel: String,
                        _fuelConsumption: Double,
-                       val bodyType: String,                              //тип груза
-                       val carryingCapacity: Int) : Transport() {         //грузоподьемность
+                       val bodyType: String,
+                       val carryingCapacity: Int) : Transport() {
 
     override val brand = _brand
     override val model = _model
@@ -48,11 +43,9 @@ class FreightTransport(_brand: String,
                 get () = orders.toList()
                 private set
 
-
     var remainingCarryingCapacity: Int = carryingCapacity
         get() = carryingCapacity - orders.sumOf{ it.cargoWeightKg!! }
         private set
-
 
     override fun refuel() {
         println("Бак $brand $model полностью заправлен")
@@ -71,7 +64,6 @@ class FreightTransport(_brand: String,
         } else {
             println("Заказ ${order.name} уже погружен в $brand $model")
         }
-
     }
     override fun unloadOrder(order: Order) {
        if (orders.contains(order)) {
@@ -95,7 +87,6 @@ class FreightTransport(_brand: String,
             println(message)
         }
     }
-
     fun listOrder(): List<Order> {
         return orders.toList()
     }
@@ -104,14 +95,12 @@ class FreightTransport(_brand: String,
     }
 }
 
-
-//пасажирский транспорт
 class PassengerTransport(_brand: String,
                          _model: String,
                          _yearOfIssue: Int,
                          _typeOfFuel: String,
                          _fuelConsumption: Double,
-                         val numberOfSeats: Int) : Transport() {  //количество мест
+                         val numberOfSeats: Int) : Transport() {
 
     override val brand = _brand
     override val model = _model
@@ -123,8 +112,9 @@ class PassengerTransport(_brand: String,
     var listOrder: List<Order> = orders.toList()
         get () = orders.toList()
         private set
+
     var remainingNumberOfSeats: Int = numberOfSeats
-            get() = numberOfSeats - orders.sumOf{ it.numberOfPassengers!! }
+        get() = numberOfSeats - orders.sumOf{ it.numberOfPassengers!! }
         private set
 
     override fun refuel() {
@@ -167,7 +157,6 @@ class PassengerTransport(_brand: String,
             println(message)
         }
     }
-
     fun listOrder(): List<Order> {
         return orders.toList()
     }
@@ -176,7 +165,6 @@ class PassengerTransport(_brand: String,
     }
 }
 
-//грузо-пасажирский транспорт
 class CargoPassengerTransport(_brand: String,
                               _model: String,
                               _yearOfIssue: Int,
@@ -243,7 +231,6 @@ class CargoPassengerTransport(_brand: String,
             println(message)
         }
     }
-
     fun listOrder(): List<Order> {
         return orders.toList()
     }
@@ -251,37 +238,6 @@ class CargoPassengerTransport(_brand: String,
         println("Перед выполнением заказа салон был продезинфецирован")
     }
 }
-
-
-    val order1 = Order("Заказ1", "Минск", "Гомель", cargoWeightKg = 2450, cargoType = "Продукты" )
-    val order2 = Order("Заказ2", "Минск", "Гомель", cargoWeightKg = 3600, cargoType = "Продукты" )
-    val order3 = Order("Заказ3", "Минск", "Могилев", cargoWeightKg = 5450, cargoType = "Промтовары" )
-    val order4 = Order("Заказ4", "Гродно", "Минск", cargoWeightKg = 7000, cargoType = "Песок" )
-    val order5 = Order("Заказ5", "Минск", "Молодечно", cargoWeightKg = 8000, cargoType = "Щебень" )
-    val order6 = Order("Заказ6", "Минск", "Гомель", numberOfPassengers = 5)
-    val order7 = Order("Заказ7", "Гомель", "Жлобин", numberOfPassengers = 45)
-    val order8 = Order("Заказ8", "Светлогорск", "Гомель", numberOfPassengers = 55)
-    val order9 = Order("Заказ9", "Минск", "Гомель", cargoWeightKg = 1450, numberOfPassengers = 2 )
-    val order10 = Order("Заказ10", "Минск", "Гомель", cargoWeightKg = 750, numberOfPassengers = 4 )
-
-    val auto1 = FreightTransport("MAN", "TGX", 2016, "ДТ", 24.0, "Рефрижератор", 19000 )
-    val auto2 = FreightTransport("Volvo", "FH16", 2012, "ДТ", 26.2, "Рефрижератор", 30000 )
-    val auto3 = FreightTransport("Hyundai", "HD170", 2016, "ДТ", 25.0, "Тент", 11500 )
-    val auto4 = FreightTransport("ГАЗ", "33023", 2016, "ГАЗ", 15.0, "Тент", 1200 )
-    val auto5 = FreightTransport("Scania", "S730 V8", 2017, "ДТ", 42.0, "Цистерна", 40000 )
-    val auto6 = FreightTransport("Volvo", "FM", 2018, "ДТ", 43.0, "Цистерна", 70000 )
-    val auto7 = FreightTransport("КАМАЗ", "43118", 2005, "ДТ", 33.0, "Кузов", 10000 )
-    val auto8 = FreightTransport("MAN", "TGS 8x4", 2018, "ДТ", 37.0, "Кузов", 27000 )
-    val auto9 = PassengerTransport("Scania", "Irizar I6", 2016, "Дизель", 35.0,  55 )
-    val auto10 = PassengerTransport("MAN", "Lion’s Coach", 2016, "Дизель", 37.0,  60 )
-    val auto11 = PassengerTransport("Mercedes-Benz", "Sprinter", 2019, "Дизель", 14.0,  18 )
-    val auto12 = CargoPassengerTransport("Volkswagen", "Crafter", 2016, "Дизель", 9.5, 2000, 4 )
-    val auto13 = CargoPassengerTransport("Volkswagen", "Transporter T5 Kasten", 2019, "Дизель", 8.5, 1200, 4 )
-    val auto14 = CargoPassengerTransport("Mercedes-Benz", "Vito", 2014, "Дизель", 9.0, 1300, 4)
-
-val listOrder = listOf<Order>(order1, order2, order3, order4, order5, order6, order7, order8, order9, order10)
-val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, auto7, auto8, auto9, auto10, auto11, auto12, auto13, auto14)
-
 
 class CarPark (private val transport: List<Transport>) {
 
@@ -291,13 +247,11 @@ class CarPark (private val transport: List<Transport>) {
         val loadedOrders: MutableMap<Order,Transport> = mutableMapOf()
     }
 
-
     fun selectedTransport(order: Order): Transport? {
 
         val selectedTransport =
             if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
-                && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()
-            ) {
+                && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()) {
 
                 val list = transport.filterIsInstance<FreightTransport>()
 
@@ -328,19 +282,19 @@ class CarPark (private val transport: List<Transport>) {
                 }
 
             } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
-                && (order.cargoWeightKg == null || order.cargoWeightKg == 0) && order.cargoType.isNullOrBlank()
-            ) {
+                && (order.cargoWeightKg == null || order.cargoWeightKg == 0) && order.cargoType.isNullOrBlank()) {
 
                 val list = transport.filterIsInstance<PassengerTransport>()
+
                 list.filter { it.listOrder.isEmpty() }
                     .filter { it.remainingNumberOfSeats >= order.numberOfPassengers!! }
                     .minByOrNull { it.remainingNumberOfSeats }
 
             } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
-                && (order.cargoWeightKg != null || order.cargoWeightKg != 0) && order.cargoType.isNullOrBlank()
-            ) {
+                && (order.cargoWeightKg != null || order.cargoWeightKg != 0) && order.cargoType.isNullOrBlank()) {
 
                 val list = transport.filterIsInstance<CargoPassengerTransport>()
+
                 list.filter { it.listOrder.isEmpty() }
                     .filter { it.remainingNumberOfSeats >= order.numberOfPassengers!! }
                     .filter { it.remainingCarryingCapacity >= order.cargoWeightKg!! }
@@ -415,6 +369,7 @@ class CarPark (private val transport: List<Transport>) {
                 }
             } else {
                 pendingOrders.add(order)
+                println("Заказ ${order.name} поставлен в очередь заказов")
             }
         } catch (e: IllegalArgumentException) {
             println("Неверно заполнен заказ")
@@ -433,9 +388,6 @@ class CarPark (private val transport: List<Transport>) {
             values?.unloadOrder(order)
     }
 
-
-
-
     fun transportUnloading() {
         val mapLoadedOrders = LoadedOrders.loadedOrders.toMap()
         for ((key,values) in mapLoadedOrders ) {
@@ -443,38 +395,62 @@ class CarPark (private val transport: List<Transport>) {
         }
     }
 
+    fun processingPendingOrders() {
+        var pendingOrdersList: List<Order> = pendingOrders.toList()
+        while(pendingOrdersList.isNotEmpty() ) {
+            pendingOrders.clear()
+            transportLoading(pendingOrdersList)
+            pendingOrdersList = pendingOrders.toList()
+            transportUnloading()
+        }
+    }
+
     fun auto(order: Order) {
-
-
+        transportLoading(order)
+        transportUnloading(order)
+        processingPendingOrders()
         }
 
     fun auto(orders: List<Order>) {
+        transportLoading(orders)
+        transportUnloading()
+        processingPendingOrders()
 
         }
-
     }
 
+fun main() {
+    val order1 = Order("Заказ1", "Минск", "Гомель", cargoWeightKg = 2450, cargoType = "Продукты" )
+    val order2 = Order("Заказ2", "Минск", "Гомель", cargoWeightKg = 3600, cargoType = "Продукты" )
+    val order3 = Order("Заказ3", "Минск", "Могилев", cargoWeightKg = 5450, cargoType = "Промтовары" )
+    val order4 = Order("Заказ4", "Гродно", "Минск", cargoWeightKg = 7000, cargoType = "Песок" )
+    val order5 = Order("Заказ5", "Минск", "Молодечно", cargoWeightKg = 8000, cargoType = "Щебень" )
+    val order6 = Order("Заказ6", "Минск", "Гомель", numberOfPassengers = 5)
+    val order7 = Order("Заказ7", "Гомель", "Жлобин", numberOfPassengers = 45)
+    val order8 = Order("Заказ8", "Светлогорск", "Гомель", numberOfPassengers = 55)
+    val order9 = Order("Заказ9", "Минск", "Гомель", cargoWeightKg = 1450, numberOfPassengers = 2 )
+    val order10 = Order("Заказ10", "Минск", "Гомель", cargoWeightKg = 750, numberOfPassengers = 4 )
 
+    val auto1 = FreightTransport("MAN", "TGX", 2016, "ДТ", 24.0, "Рефрижератор", 19000 )
+    val auto2 = FreightTransport("Volvo", "FH16", 2012, "ДТ", 26.2, "Рефрижератор", 30000 )
+    val auto3 = FreightTransport("Hyundai", "HD170", 2016, "ДТ", 25.0, "Тент", 11500 )
+    val auto4 = FreightTransport("ГАЗ", "33023", 2016, "ГАЗ", 15.0, "Тент", 1200 )
+    val auto5 = FreightTransport("Scania", "S730 V8", 2017, "ДТ", 42.0, "Цистерна", 40000 )
+    val auto6 = FreightTransport("Volvo", "FM", 2018, "ДТ", 43.0, "Цистерна", 70000 )
+    val auto7 = FreightTransport("КАМАЗ", "43118", 2005, "ДТ", 33.0, "Кузов", 10000 )
+    val auto8 = FreightTransport("MAN", "TGS 8x4", 2018, "ДТ", 37.0, "Кузов", 27000 )
+    val auto9 = PassengerTransport("Scania", "Irizar I6", 2016, "Дизель", 35.0,  55 )
+    val auto10 = PassengerTransport("MAN", "Lion’s Coach", 2016, "Дизель", 37.0,  60 )
+    val auto11 = PassengerTransport("Mercedes-Benz", "Sprinter", 2019, "Дизель", 14.0,  18 )
+    val auto12 = CargoPassengerTransport("Volkswagen", "Crafter", 2016, "Дизель", 9.5, 2000, 4 )
+    val auto13 = CargoPassengerTransport("Volkswagen", "Transporter T5 Kasten", 2019, "Дизель", 8.5, 1200, 4 )
+    val auto14 = CargoPassengerTransport("Mercedes-Benz", "Vito", 2014, "Дизель", 9.0, 1300, 4)
 
+    val listOrder = listOf<Order>(order1, order2, order3, order4, order5, order6, order7, order8, order9, order10)
+    val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, auto7, auto8, auto9, auto10, auto11, auto12, auto13, auto14)
 
-
-
-fun forr() {
     val carPark = CarPark(listAutoPark)
-
-    for (n in listOrder ) {
-       val d =  carPark.selectedTransport(n)
-        d?.loadOrder (n)
-        d?.checkOrder()
-        if (d is FreightTransport ) {
-            println({d.remainingCarryingCapacity})
-        }
-        when (d) {
-            is FreightTransport -> println({d?.remainingCarryingCapacity})
-            is CargoPassengerTransport -> println({d?.remainingCarryingCapacity})
-            is PassengerTransport -> println({d?.remainingNumberOfSeats})
-        }
-    }
-
-
+    carPark.auto(listOrder)
 }
+
+
