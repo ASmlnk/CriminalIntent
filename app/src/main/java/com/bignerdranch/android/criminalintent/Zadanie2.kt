@@ -43,13 +43,14 @@ class FreightTransport(_brand: String,
     override val typeOfFuel = _typeOfFuel
     override val fuelConsumption = _fuelConsumption
     private val orders: MutableSet<Order> = mutableSetOf()
-            var listOrder: List<Order> = orders.toList()
+
+    var listOrder: List<Order> = orders.toList()
                 get () = orders.toList()
                 private set
 
 
     var remainingCarryingCapacity: Int = carryingCapacity
-        get() = carryingCapacity - orders.sumBy{ it.cargoWeightKg!! }
+        get() = carryingCapacity - orders.sumOf{ it.cargoWeightKg!! }
         private set
 
 
@@ -65,6 +66,7 @@ class FreightTransport(_brand: String,
     override fun loadOrder(order: Order) {
         if (!orders.contains(order)) {
             orders.add(order)
+            CarPark.LoadedOrders.loadedOrders[order] = this@FreightTransport
             println("Заказ ${order.name} загружен в $brand $model")
         } else {
             println("Заказ ${order.name} уже погружен в $brand $model")
@@ -74,13 +76,14 @@ class FreightTransport(_brand: String,
     override fun unloadOrder(order: Order) {
        if (orders.contains(order)) {
            orders.remove(order)
+           CarPark.LoadedOrders.loadedOrders.remove(order)
            println("Заказ ${order.name} разгружен из $brand $model")
        } else {
            println("Заказа ${order.name} уже был разгружен")
        }
     }
     override fun checkOrder() {
-        if (orders.isNullOrEmpty()) {
+        if (orders.isEmpty()) {
             println("список заказов пуст")
         } else {
             val list: List<Order> = orders.toList()
@@ -121,7 +124,7 @@ class PassengerTransport(_brand: String,
         get () = orders.toList()
         private set
     var remainingNumberOfSeats: Int = numberOfSeats
-            get() = numberOfSeats - orders.sumBy{ it.numberOfPassengers!! }
+            get() = numberOfSeats - orders.sumOf{ it.numberOfPassengers!! }
         private set
 
     override fun refuel() {
@@ -136,6 +139,7 @@ class PassengerTransport(_brand: String,
     override fun loadOrder(order: Order) {
         if (!orders.contains(order)) {
             orders.add(order)
+            CarPark.LoadedOrders.loadedOrders[order] = this@PassengerTransport
             println("Заказ ${order.name} загружен в $brand $model")
         } else {
             println("Заказ ${order.name} уже погружен в $brand $model")
@@ -144,13 +148,14 @@ class PassengerTransport(_brand: String,
     override fun unloadOrder(order: Order) {
         if (orders.contains(order)) {
             orders.remove(order)
+            CarPark.LoadedOrders.loadedOrders.remove(order)
             println("Заказ ${order.name} разгружен из $brand $model")
         } else {
             println("Заказа ${order.name} уже был разгружен")
         }
     }
     override fun checkOrder() {
-        if (orders.isNullOrEmpty()) {
+        if (orders.isEmpty()) {
             println("список заказов пуст")
         } else {
             val list: List<Order> = orders.toList()
@@ -191,10 +196,10 @@ class CargoPassengerTransport(_brand: String,
         get () = orders.toList()
         private set
     var remainingNumberOfSeats: Int = numberOfSeats
-        get() = numberOfSeats - orders.sumBy{ it.numberOfPassengers!! }
+        get() = numberOfSeats - orders.sumOf{ it.numberOfPassengers!! }
         private set
     var remainingCarryingCapacity: Int = carryingCapacity
-        get() = carryingCapacity - orders.sumBy{ it.cargoWeightKg!! }
+        get() = carryingCapacity - orders.sumOf{ it.cargoWeightKg!! }
         private set
 
     override fun refuel() {
@@ -209,6 +214,7 @@ class CargoPassengerTransport(_brand: String,
     override fun loadOrder(order: Order) {
         if (!orders.contains(order)) {
             orders.add(order)
+            CarPark.LoadedOrders.loadedOrders[order] = this@CargoPassengerTransport
             println("Заказ ${order.name} загружен в $brand $model")
         } else {
             println("Заказ ${order.name} уже погружен в $brand $model")
@@ -217,13 +223,14 @@ class CargoPassengerTransport(_brand: String,
     override fun unloadOrder(order: Order) {
         if (orders.contains(order)) {
             orders.remove(order)
+            CarPark.LoadedOrders.loadedOrders.remove(order)
             println("Заказ ${order.name} разгружен из $brand $model")
         } else {
             println("Заказа ${order.name} уже был разгружен")
         }
     }
     override fun checkOrder() {
-        if (orders.isNullOrEmpty()) {
+        if (orders.isEmpty()) {
             println("список заказов пуст")
         } else {
             val list: List<Order> = orders.toList()
@@ -275,54 +282,199 @@ class CargoPassengerTransport(_brand: String,
 val listOrder = listOf<Order>(order1, order2, order3, order4, order5, order6, order7, order8, order9, order10)
 val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, auto7, auto8, auto9, auto10, auto11, auto12, auto13, auto14)
 
-fun transportCategory (order: Order, transport: List<Transport>): List<Transport> {
 
-    val pendingOrders: MutableList<Order> = mutableListOf()
+class CarPark (private val transport: List<Transport>) {
+
+    private val pendingOrders: MutableSet<Order> = mutableSetOf()
+
+    object LoadedOrders {
+        val loadedOrders: MutableMap<Order,Transport> = mutableMapOf()
+    }
+
+
+    fun selectedTransport(order: Order): Transport? {
+
+        val selectedTransport =
+            if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
+                && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()
+            ) {
+
+                val list = transport.filterIsInstance<FreightTransport>()
+
+                when (order.cargoType.lowercase()) {
+                    "продукты" -> {
+                        list.filter { it.bodyType.lowercase() == "рефрижератор" }
+                            .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                            .minByOrNull { it.remainingCarryingCapacity }
+                    }
+                    "песок", "щебень" -> {
+                        list.filter { it.bodyType.lowercase() == "кузов" }
+                            .filter { it.listOrder.isEmpty() }
+                            .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                            .minByOrNull { it.remainingCarryingCapacity }
+                    }
+                    "молоко", "вода" -> {
+                        list.filter { it.bodyType.lowercase() == "кузов" }
+                            .filter { it.listOrder.isEmpty() }
+                            .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                            .minByOrNull { it.remainingCarryingCapacity }
+                    }
+                    "промтовары", "стройиатериалы" -> {
+                        list.filter { it.bodyType.lowercase() == "цистерна" }
+                            .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
+                            .minByOrNull { it.remainingCarryingCapacity }
+                    }
+                    else -> throw IllegalArgumentException("Мы не можем выполнить заказ ${order.name}")
+                }
+
+            } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
+                && (order.cargoWeightKg == null || order.cargoWeightKg == 0) && order.cargoType.isNullOrBlank()
+            ) {
+
+                val list = transport.filterIsInstance<PassengerTransport>()
+                list.filter { it.listOrder.isEmpty() }
+                    .filter { it.remainingNumberOfSeats >= order.numberOfPassengers!! }
+                    .minByOrNull { it.remainingNumberOfSeats }
+
+            } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
+                && (order.cargoWeightKg != null || order.cargoWeightKg != 0) && order.cargoType.isNullOrBlank()
+            ) {
+
+                val list = transport.filterIsInstance<CargoPassengerTransport>()
+                list.filter { it.listOrder.isEmpty() }
+                    .filter { it.remainingNumberOfSeats >= order.numberOfPassengers!! }
+                    .filter { it.remainingCarryingCapacity >= order.cargoWeightKg!! }
+                    .minByOrNull { it.remainingNumberOfSeats }
+
+            } else {
+                throw IllegalArgumentException("Неверно заполнен заказ")
+            }
+        return selectedTransport
+    }
+
+    fun transportLoading(order: Order) {
+        try {
+            val transport = selectedTransport(order)
+            if (transport != null) {
+                when (transport) {
+                    is FreightTransport -> {
+                        if (transport.listOrder.isEmpty()) {
+                            with(transport) {
+                                repair()
+                                refuel()
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                                sealing()
+                            }
+                        } else {
+                            with(transport) {
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                                sealing()
+                            }
+                        }
+                    }
+                    is CargoPassengerTransport -> {
+                        if (transport.listOrder.isEmpty()) {
+                            with(transport) {
+                                repair()
+                                refuel()
+                                disinfection()
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                            }
+                        } else {
+                            with(transport) {
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                            }
+                        }
+                    }
+                    is PassengerTransport -> {
+                        if (transport.listOrder.isEmpty()) {
+                            with(transport) {
+                                repair()
+                                refuel()
+                                disinfection()
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                            }
+                        } else {
+                            with(transport) {
+                                freePlace()
+                                loadOrder(order)
+                                freePlace()
+                            }
+                        }
+                    }
+                }
+            } else {
+                pendingOrders.add(order)
+            }
+        } catch (e: IllegalArgumentException) {
+            println("Неверно заполнен заказ")
+        }
+    }
+
+    fun transportLoading(orders: List<Order>) {
+        for (t in orders) {
+            transportLoading(t)
+        }
+    }
+
+    fun transportUnloading(order: Order) {
+        val mapLoadedOrders = LoadedOrders.loadedOrders.toMap()
+        val values = mapLoadedOrders[order]
+            values?.unloadOrder(order)
+    }
 
 
 
-  val selectedTransport =  if ((order.numberOfPassengers == null || order.numberOfPassengers == 0)
-                && order.cargoWeightKg != null && order.cargoWeightKg != 0 && !order.cargoType.isNullOrBlank()) {
-      val list = transport.filterIsInstance<FreightTransport>()
-      val selectedTransport = when (order.cargoType.capitalize()) {
-          "продукты" -> {
-              list.filter { it.bodyType.capitalize() == "рефрижератор" }
-                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
-                  .minByOrNull { it.remainingCarryingCapacity }
-          }
-          "песок", "щебень" -> {
-              list.filter { it.bodyType.capitalize() == "кузов" }
-                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
-                  .filter { it.listOrder.isNullOrEmpty() }
-                  .minByOrNull { it.remainingCarryingCapacity }
-          }
-          "молоко", "вода" -> {
-              list.filter { it.bodyType.capitalize() == "кузов" }
-                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
-                  .filter { it.listOrder.isNullOrEmpty() }
-                  .minByOrNull { it.remainingCarryingCapacity }
-          }
-          "промтовары", "стройиатериалы" -> {
-              list.filter { it.bodyType.capitalize() == "цистерна" }
-                  .filter { it.remainingCarryingCapacity >= order.cargoWeightKg }
-                  .minByOrNull { it.remainingCarryingCapacity }
-          }
-          else -> throw IllegalArgumentException("Мы не можем выполнить заказ ${order.name}")
-      }
-      return selectedTransport
 
-  } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
-                && (order.cargoWeightKg == null || order.cargoWeightKg == 0 ) && order.cargoType.isNullOrBlank()) {
-      val list = transport.filterIsInstance<PassengerTransport>()
+    fun transportUnloading() {
+        val mapLoadedOrders = LoadedOrders.loadedOrders.toMap()
+        for ((key,values) in mapLoadedOrders ) {
+            values.unloadOrder(key)
+        }
+    }
 
-  } else if ((order.numberOfPassengers != null || order.numberOfPassengers != 0)
-                && (order.cargoWeightKg != null || order.cargoWeightKg != 0 ) && order.cargoType.isNullOrBlank()) {
-      transport.filterIsInstance<CargoPassengerTransport>()
-  } else {
-      throw IllegalArgumentException("Неверно заполнен заказ")
+    fun auto(order: Order) {
+
+
+        }
+
+    fun auto(orders: List<Order>) {
+
+        }
+
+    }
+
+
+
+
+
+
+fun forr() {
+    val carPark = CarPark(listAutoPark)
+
+    for (n in listOrder ) {
+       val d =  carPark.selectedTransport(n)
+        d?.loadOrder (n)
+        d?.checkOrder()
+        if (d is FreightTransport ) {
+            println({d.remainingCarryingCapacity})
+        }
+        when (d) {
+            is FreightTransport -> println({d?.remainingCarryingCapacity})
+            is CargoPassengerTransport -> println({d?.remainingCarryingCapacity})
+            is PassengerTransport -> println({d?.remainingNumberOfSeats})
+        }
+    }
+
+
 }
-return c
-}
-
-
-
