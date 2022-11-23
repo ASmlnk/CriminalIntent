@@ -2,8 +2,13 @@
 
 package com.bignerdranch.android.criminalintent
 
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
@@ -24,6 +29,7 @@ private const val DIALOG_DATE = "DialogDate"
 private const val DIALOG_TIME = "DialogTime"
 private const val REQUEST_DATE = 0
 private const val REQUEST_TIME = 1
+private const val REQUEST_CONTACT = 1
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
@@ -34,6 +40,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
     private lateinit var reportButton: Button
+    private lateinit var suspectButton: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this) [CrimeDetailViewModel::class.java]
@@ -55,6 +62,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         timeButton = view.findViewById(R.id.crime_time) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
         reportButton = view.findViewById(R.id.crime_report) as Button
+        suspectButton = view.findViewById(R.id.crime_suspect) as Button
 
 
         dateButton.setOnClickListener {
@@ -72,8 +80,8 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         reportButton.setOnClickListener {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT,
-                         getString(R.string.crime_report_subject))
+                putExtra(Intent.EXTRA_TEXT, getCrimeReport())
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
             }.also { intent ->
                         /*startActivity(intent)*/    //значение по умолчанию
                         val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report)) //всегда преставляется возможность выбора внешней активити
@@ -121,6 +129,20 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 crime.isSolved = isChecked
             }
         }
+        suspectButton.apply {
+            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+            setOnClickListener {
+                startActivityForResult(pickContactIntent, REQUEST_CONTACT)
+            }
+
+            val packageManager: PackageManager = requireActivity().packageManager
+            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)
+            if (resolvedActivity == null) {
+                isEnabled = false
+            }
+        }
+
+
     }
 
     override fun onStop() {
@@ -134,6 +156,38 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         solvedCheckBox.apply {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()  //пропуск анимации флажка при повароте экрана
+        if (crime.suspect.isNotEmpty()) {
+            suspectButton.text = crime.suspect
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when {
+
+            resultCode != Activity.RESULT_OK -> return
+            requestCode == REQUEST_CONTACT && data != null -> {
+                //запрашиваем БД контактов и получаем объект курсор
+                val contactUri: Uri? = data.data
+                //Указать для каких полей ваш запрос должен возвращать значение.
+                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+                //Выполняемый здесь запрос - contactUri похож на предложение where
+                val cursor = requireActivity().contentResolver.query(contactUri!!, queryFields, null, null, null)
+                cursor?.use {
+                    //Проверяем, что курсор содержит хотя бы один результат
+                    if (it.count == 0) {
+                        return
+                    }
+                    /*Первый столбец первой строки данных -
+                            это имя вашего подазреваемого*/
+                    it.moveToFirst()    //перемещает курсор в первую строку
+                    val suspect = it.getString(0)  //получаем содержимое первого столбца в виде строки
+                                                                //эта строка будет именем подозреваемого
+                    crime.suspect = suspect                     //вставляем эту строку в текст кнопки
+                    crimeDetailViewModel.saveCrime(crime)        //полученую информацию сохроняем в нашей БД
+                    suspectButton.text = suspect
+                }
+            }
         }
     }
 
@@ -148,7 +202,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         var suspect = if (crime.suspect.isBlank()) {
             getString(R.string.crime_report_no_suspect)
         } else {
-            getString(R.string.crime_report_suspect)
+            getString(R.string.crime_report_suspect, crime.suspect)
         }
 
         return getString(R.string.crime_report,
