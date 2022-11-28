@@ -2,6 +2,7 @@
 
 package com.bignerdranch.android.criminalintent
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -30,6 +31,7 @@ private const val DIALOG_TIME = "DialogTime"
 private const val REQUEST_DATE = 0
 private const val REQUEST_TIME = 1
 private const val REQUEST_CONTACT = 1
+private const val REQUEST_CALL = 1
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
@@ -41,6 +43,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     private lateinit var solvedCheckBox: CheckBox
     private lateinit var reportButton: Button
     private lateinit var suspectButton: Button
+    private lateinit var callTheViolator: Button
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this) [CrimeDetailViewModel::class.java]
@@ -63,6 +66,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
         reportButton = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
+        callTheViolator = view.findViewById(R.id.call_the_violator) as Button
 
 
         dateButton.setOnClickListener {
@@ -87,6 +91,12 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                         val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report)) //всегда преставляется возможность выбора внешней активити
                         startActivity(chooserIntent)
             }
+        }
+
+        callTheViolator.setOnClickListener {
+            val intent = Intent(Intent.ACTION_DIAL)
+            intent.data = Uri.parse("tel:" + crime.phoneNumber)
+            startActivity(intent)
         }
 
         /*dateButton.apply {         Блокировка кнопки
@@ -130,7 +140,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
             }
         }
         suspectButton.apply {
-            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)  /*ContactsContract.Contacts.CONTENT_URI*/
             setOnClickListener {
                 startActivityForResult(pickContactIntent, REQUEST_CONTACT)
             }
@@ -159,9 +169,14 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         if (crime.suspect.isNotEmpty()) {
             suspectButton.text = crime.suspect
             }
+            if (crime.phoneNumber.isNotEmpty()) {
+                callTheViolator.text = crime.phoneNumber
+            }
         }
+
     }
 
+    @SuppressLint("Range")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when {
 
@@ -170,7 +185,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 //запрашиваем БД контактов и получаем объект курсор
                 val contactUri: Uri? = data.data
                 //Указать для каких полей ваш запрос должен возвращать значение.
-                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER)
                 //Выполняемый здесь запрос - contactUri похож на предложение where
                 val cursor = requireActivity().contentResolver.query(contactUri!!, queryFields, null, null, null)
                 cursor?.use {
@@ -182,10 +197,16 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                             это имя вашего подазреваемого*/
                     it.moveToFirst()    //перемещает курсор в первую строку
                     val suspect = it.getString(0)  //получаем содержимое первого столбца в виде строки
-                                                                //эта строка будет именем подозреваемого
+
+                    val phoneNumber = it.getString(1)
+                    
+                    crime.phoneNumber = phoneNumber
+                                                                    //эта строка будет именем подозреваемого
                     crime.suspect = suspect                     //вставляем эту строку в текст кнопки
                     crimeDetailViewModel.saveCrime(crime)        //полученую информацию сохроняем в нашей БД
                     suspectButton.text = suspect
+                    callTheViolator.text = phoneNumber
+
                 }
             }
         }
