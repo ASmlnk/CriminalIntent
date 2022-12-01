@@ -4,25 +4,28 @@ package com.bignerdranch.android.criminalintent
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
+import android.view.*
+import android.widget.*
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import java.io.File
 import java.util.*
+import kotlin.properties.Delegates
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
@@ -31,12 +34,14 @@ private const val DIALOG_TIME = "DialogTime"
 private const val REQUEST_DATE = 0
 private const val REQUEST_TIME = 1
 private const val REQUEST_CONTACT = 1
-private const val REQUEST_CALL = 1
+private const val REQUEST_PHOTO = 2
+private const val REQUEST_PHOTO_BIG = 2
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
 
     private lateinit var crime: Crime
+    private lateinit var photoFile: File
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
     private lateinit var timeButton: Button
@@ -44,6 +49,12 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     private lateinit var reportButton: Button
     private lateinit var suspectButton: Button
     private lateinit var callTheViolator: Button
+    private lateinit var photoButton: ImageButton
+    private lateinit var photoView: ImageView
+    private lateinit var photoUri: Uri
+    private lateinit var observer: ViewTreeObserver
+    private val photoSize = mutableMapOf<String, Int>( "width" to 0, "height" to 0 )
+
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this) [CrimeDetailViewModel::class.java]
@@ -67,6 +78,32 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         reportButton = view.findViewById(R.id.crime_report) as Button
         suspectButton = view.findViewById(R.id.crime_suspect) as Button
         callTheViolator = view.findViewById(R.id.call_the_violator) as Button
+        photoButton = view.findViewById(R.id.crime_camera) as ImageButton
+        photoView = view.findViewById(R.id.crime_photo) as ImageView
+
+        observer = photoView.viewTreeObserver
+
+
+
+
+
+
+        observer.addOnGlobalLayoutListener {
+            val width = photoView.measuredWidth
+            val height = photoView.measuredHeight
+            Log.d("My", "width = $width heidht = $height")
+            updateSize(width, height)
+        }
+
+        Log.d("My", "$photoSize")
+
+
+
+
+
+
+
+
 
 
         dateButton.setOnClickListener {
@@ -92,12 +129,12 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                         startActivity(chooserIntent)
             }
         }
-
         callTheViolator.setOnClickListener {
             val intent = Intent(Intent.ACTION_DIAL)
             intent.data = Uri.parse("tel:" + crime.phoneNumber)
             startActivity(intent)
         }
+
 
         /*dateButton.apply {         Блокировка кнопки
             text = crime.date.toString()
@@ -112,6 +149,8 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         crimeDetailViewModel.crimeLiveData.observe(viewLifecycleOwner, androidx.lifecycle.Observer { crime ->
             crime?.let {
                 this.crime = crime
+                photoFile = crimeDetailViewModel.getPhotoFile(crime)
+                photoUri = FileProvider.getUriForFile(requireActivity(), "com.bignerdranch.android.criminalintent.fileprovider", photoFile)
                 updateUI()
             }   //наблюдаем за ЛД, придет объект crime из БД по id и
                 // с помощью updateUI заполним представление
@@ -151,6 +190,38 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 isEnabled = false
             }
         }
+        photoButton.apply {
+            /*Проверка на наличие приложения камеры в ОС*/
+            val packageManager: PackageManager = requireActivity().packageManager
+            val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+
+            /*Если приложения камеры нет кнопка заблокируется*/
+            if (resolvedActivity == null) {
+                isEnabled = false
+            }
+
+            setOnClickListener {
+                /*Дополниние с указанием пути к файлу*/
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                /*Для каждой активити которая может обработать интент captureImage устанавливаем флаг Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                * т.е. даем разрешение запасывать Uri (photoUri)*/
+                val cameraActivities: List<ResolveInfo> = packageManager.queryIntentActivities(captureImage,PackageManager.MATCH_DEFAULT_ONLY)
+                for (cameraActivity in cameraActivities) {
+                    requireActivity().grantUriPermission(cameraActivity.activityInfo.packageName, photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                }
+                startActivityForResult(captureImage, REQUEST_PHOTO)
+            }
+        }
+        photoView.apply {
+            setOnClickListener {
+                if (photoFile.exists()) {
+                    PhotoDialog.newInstance(photoFile).apply {
+                        show(this@CrimeFragment.requireFragmentManager(), "dialog")
+                    }
+                }
+            }
+        }
 
 
     }
@@ -158,6 +229,11 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     override fun onStop() {
         super.onStop()
         crimeDetailViewModel.saveCrime(crime)
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     }
 
     private fun updateUI() {
@@ -173,6 +249,41 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 callTheViolator.text = crime.phoneNumber
             }
         }
+
+        updatePhotoView()
+
+    }
+
+    private fun updatePhotoView() {
+
+        Log.d("My", "sa $photoSize")
+
+
+        if (photoFile.exists()) {
+
+            val width: Int = photoSize["width"]!!
+            val height = photoSize["height"]!!
+
+
+            val bitmap = getScaledBitmap(photoFile.path, width ,height ) /*requireActivity()*/
+            val matrix: Matrix = Matrix()
+            if (bitmap.height < bitmap.width) {
+                matrix.postRotate(90F)
+            } else {
+                matrix.postRotate(0F)
+            }
+            val b = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+
+            photoView.setImageBitmap(b)
+
+        } else {
+            photoView.setImageDrawable(null)
+        }
+    }
+
+    private fun updateSize(width: Int, height: Int){
+        photoSize["width"] = width
+        photoSize["height"] = height
 
     }
 
@@ -208,6 +319,10 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                     callTheViolator.text = phoneNumber
 
                 }
+            }
+            resultCode == REQUEST_PHOTO -> {
+                requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                updatePhotoView()
             }
         }
     }
@@ -253,4 +368,5 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         updateUI()
     }
 }
+
 
