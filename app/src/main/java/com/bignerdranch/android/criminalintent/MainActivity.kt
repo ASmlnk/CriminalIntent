@@ -33,3 +33,5 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks {
             .commit()
     } //Реализация функции интерфейса Callbacks из CrimeListFragment
 }
+
+//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

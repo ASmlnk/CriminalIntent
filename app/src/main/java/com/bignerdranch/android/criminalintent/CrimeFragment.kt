@@ -52,7 +52,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     private lateinit var photoButton: ImageButton
     private lateinit var photoView: ImageView
     private lateinit var photoUri: Uri
-    private lateinit var observer: ViewTreeObserver
+    //private lateinit var observer: ViewTreeObserver
     private val photoSize = mutableMapOf<String, Int>( "width" to 0, "height" to 0 )
 
 
@@ -81,21 +81,62 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         photoButton = view.findViewById(R.id.crime_camera) as ImageButton
         photoView = view.findViewById(R.id.crime_photo) as ImageView
 
-        observer = photoView.viewTreeObserver
+        //observer = photoView.viewTreeObserver
+
+        val observer = photoView.viewTreeObserver
+        observer.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+
+                photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                val width = photoView.width
+                val height = photoView.measuredHeight
+                updateSize(width, height)
+
+                Log.d("My", "width = $width heidht = $height")
+
+            }
+        })
 
 
 
 
 
 
-        observer.addOnGlobalLayoutListener {
-            val width = photoView.measuredWidth
-            val height = photoView.measuredHeight
+
+
+
+        /*observer.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+
+                observer.removeOnGlobalLayoutListener(this)
+
+                val width = photoView.width
+                val height = photoView.measuredHeight
+
+                Log.d("My", "width = $width heidht = $height")
+
+            }
+            })*/
+
+
+            /*observer.removeOnGlobalLayoutListener{this}
+            val width = photoView.width
             Log.d("My", "width = $width heidht = $height")
-            updateSize(width, height)
-        }
+            //updateSize(width, height)
+            val height = photoView.measuredHeight*/
 
-        Log.d("My", "$photoSize")
+
+
+
+        Log.d("My", "width = ${photoView.width} heidht = ")
+
+
+
+
+
+
+
 
 
 
@@ -146,6 +187,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         crimeDetailViewModel.crimeLiveData.observe(viewLifecycleOwner, androidx.lifecycle.Observer { crime ->
             crime?.let {
                 this.crime = crime
@@ -256,7 +298,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
 
     private fun updatePhotoView() {
 
-        Log.d("My", "sa $photoSize")
+
 
 
         if (photoFile.exists()) {
@@ -265,7 +307,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
             val height = photoSize["height"]!!
 
 
-            val bitmap = getScaledBitmap(photoFile.path, width ,height ) /*requireActivity()*/
+            val bitmap = getScaledBitmap(photoFile.path, width, height ) /*requireActivity()*/
             val matrix: Matrix = Matrix()
             if (bitmap.height < bitmap.width) {
                 matrix.postRotate(90F)
