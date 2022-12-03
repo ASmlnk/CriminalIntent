@@ -4,11 +4,7 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.Window
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
@@ -25,7 +21,7 @@ class PhotoDialog: DialogFragment() {
         val photoFile = arguments?.getSerializable(ARG_PHOTO) as File
         //val bitmap = getScaledBitmap(photoFile.path, requireActivity())
        val bitmap = BitmapFactory.decodeFile(photoFile.path)
-        val matrix: Matrix = Matrix()
+        val matrix = Matrix()
         if (bitmap.height < bitmap.width) {
             matrix.postRotate(90F)
         } else {

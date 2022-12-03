@@ -4,7 +4,6 @@ package com.bignerdranch.android.criminalintent
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
@@ -25,9 +24,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import java.io.File
 import java.util.*
-import kotlin.properties.Delegates
 
-private const val TAG = "CrimeFragment"
+//private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
 private const val DIALOG_TIME = "DialogTime"
@@ -35,7 +33,6 @@ private const val REQUEST_DATE = 0
 private const val REQUEST_TIME = 1
 private const val REQUEST_CONTACT = 1
 private const val REQUEST_PHOTO = 2
-private const val REQUEST_PHOTO_BIG = 2
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
 class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
@@ -52,9 +49,10 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
     private lateinit var photoButton: ImageButton
     private lateinit var photoView: ImageView
     private lateinit var photoUri: Uri
-    //private lateinit var observer: ViewTreeObserver
-    private val photoSize = mutableMapOf<String, Int>( "width" to 0, "height" to 0 )
+    private var width = 0
+    private var height = 0
 
+    //private val photoSize = mutableMapOf<String, Int>( "width" to 0, "height" to 0 )
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this) [CrimeDetailViewModel::class.java]
@@ -81,71 +79,18 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         photoButton = view.findViewById(R.id.crime_camera) as ImageButton
         photoView = view.findViewById(R.id.crime_photo) as ImageView
 
-        //observer = photoView.viewTreeObserver
-
         val observer = photoView.viewTreeObserver
         observer.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
 
                 photoView.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
-                val width = photoView.width
-                val height = photoView.measuredHeight
-                updateSize(width, height)
-
+                width = photoView.width
+                height = photoView.measuredHeight
+                //updateSize(width, height)
                 Log.d("My", "width = $width heidht = $height")
-
             }
         })
-
-
-
-
-
-
-
-
-
-        /*observer.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-
-                observer.removeOnGlobalLayoutListener(this)
-
-                val width = photoView.width
-                val height = photoView.measuredHeight
-
-                Log.d("My", "width = $width heidht = $height")
-
-            }
-            })*/
-
-
-            /*observer.removeOnGlobalLayoutListener{this}
-            val width = photoView.width
-            Log.d("My", "width = $width heidht = $height")
-            //updateSize(width, height)
-            val height = photoView.measuredHeight*/
-
-
-
-
-        Log.d("My", "width = ${photoView.width} heidht = ")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         dateButton.setOnClickListener {
             DatePickerFragment.newInstance(crime.date).apply {           //передаем дату а диологовое окно
@@ -176,18 +121,15 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
             startActivity(intent)
         }
 
-
         /*dateButton.apply {         Блокировка кнопки
             text = crime.date.toString()
             isEnabled = false
         }*/
-
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         crimeDetailViewModel.crimeLiveData.observe(viewLifecycleOwner, androidx.lifecycle.Observer { crime ->
             crime?.let {
                 this.crime = crime
@@ -199,6 +141,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         })
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     override fun onStart() {
         super.onStart()
 
@@ -264,8 +207,6 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 }
             }
         }
-
-
     }
 
     override fun onStop() {
@@ -291,49 +232,57 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
                 callTheViolator.text = crime.phoneNumber
             }
         }
-
         updatePhotoView()
-
     }
 
     private fun updatePhotoView() {
 
-
-
-
         if (photoFile.exists()) {
 
-            val width: Int = photoSize["width"]!!
-            val height = photoSize["height"]!!
+            if (width > 0 && height > 0 ) {
 
+            //val width: Int = photoSize["width"]!!
+           // val height = photoSize["height"]!!
 
             val bitmap = getScaledBitmap(photoFile.path, width, height ) /*requireActivity()*/
-            val matrix: Matrix = Matrix()
+            val matrix = Matrix()
             if (bitmap.height < bitmap.width) {
                 matrix.postRotate(90F)
             } else {
                 matrix.postRotate(0F)
             }
             val b = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-
             photoView.setImageBitmap(b)
+
+            } else {
+
+                val bitmap = getScaledBitmap(photoFile.path, requireActivity() ) /*requireActivity()*/
+                val matrix = Matrix()
+                if (bitmap.height < bitmap.width) {
+                    matrix.postRotate(90F)
+                } else {
+                    matrix.postRotate(0F)
+                }
+                val b = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                photoView.setImageBitmap(b)
+            }
 
         } else {
             photoView.setImageDrawable(null)
         }
     }
 
-    private fun updateSize(width: Int, height: Int){
+    /*private fun updateSize(width: Int, height: Int){
         photoSize["width"] = width
         photoSize["height"] = height
-
-    }
+    }*/
 
     @SuppressLint("Range")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when {
 
             resultCode != Activity.RESULT_OK -> return
+
             requestCode == REQUEST_CONTACT && data != null -> {
                 //запрашиваем БД контактов и получаем объект курсор
                 val contactUri: Uri? = data.data
@@ -362,6 +311,7 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
 
                 }
             }
+
             resultCode == REQUEST_PHOTO -> {
                 requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 updatePhotoView()
@@ -377,12 +327,11 @@ class CrimeFragment: Fragment(), DatePickerFragment.Callbacks, TimePickerFragmen
         }
 
         val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
-        var suspect = if (crime.suspect.isBlank()) {
+        val suspect = if (crime.suspect.isBlank()) {
             getString(R.string.crime_report_no_suspect)
         } else {
             getString(R.string.crime_report_suspect, crime.suspect)
         }
-
         return getString(R.string.crime_report,
                          crime.title,
                          dateString,
