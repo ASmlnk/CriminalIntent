@@ -1,6 +1,10 @@
 package com.bignerdranch.android.criminalintent
 
 
+interface CheckOrder {
+    fun checkOrder ()
+}
+
 data class Order (val name: String,
                   val startingPoint: String,
                   val endPoint: String,
@@ -16,12 +20,16 @@ abstract class Transport {
     abstract val typeOfFuel: String
     abstract val fuelConsumption: Double
 
-    abstract fun refuel()
-    abstract fun repair()
+    open fun refuel() {
+        println("Бак $brand $model полностью заправлен")
+    }
+    open fun repair() {
+        println("Выполнено техническое обслуживание и ремонт $brand $model")
+    }
     abstract fun freePlace()
     abstract fun loadOrder (order: Order)
     abstract fun unloadOrder (order: Order)
-    abstract fun checkOrder ()
+  //  abstract fun checkOrder ()
 }
 
 class FreightTransport(_brand: String,
@@ -30,7 +38,7 @@ class FreightTransport(_brand: String,
                        _typeOfFuel: String,
                        _fuelConsumption: Double,
                        val bodyType: String,
-                       val carryingCapacity: Int) : Transport() {
+                       val carryingCapacity: Int) : Transport(), CheckOrder {
 
     override val brand = _brand
     override val model = _model
@@ -47,11 +55,11 @@ class FreightTransport(_brand: String,
         get() = carryingCapacity - orders.sumOf{ it.cargoWeightKg!! }
         private set
 
-    override fun refuel() {
-        println("Бак $brand $model полностью заправлен")
+     override fun refuel() {
+       super.refuel()
     }
     override fun repair() {
-        println("Выполнено техническое обслуживание и ремонт $brand $model")
+        super.repair()
     }
     override fun freePlace() {
         println("В транспорт можно погрузить еще $remainingCarryingCapacity кг ")
@@ -100,7 +108,7 @@ class PassengerTransport(_brand: String,
                          _yearOfIssue: Int,
                          _typeOfFuel: String,
                          _fuelConsumption: Double,
-                         val numberOfSeats: Int) : Transport() {
+                         val numberOfSeats: Int) : Transport(), CheckOrder {
 
     override val brand = _brand
     override val model = _model
@@ -118,10 +126,10 @@ class PassengerTransport(_brand: String,
         private set
 
     override fun refuel() {
-        println("Бак $brand $model полностью заправлен")
+        super.refuel()
     }
     override fun repair() {
-        println("Выполнено техническое обслуживание и ремонт $brand $model")
+       super.repair()
     }
     override fun freePlace() {
         println("В транспорте еще $remainingNumberOfSeats свободных мест ")
@@ -171,7 +179,7 @@ class CargoPassengerTransport(_brand: String,
                               _typeOfFuel: String,
                               _fuelConsumption: Double,
                               val carryingCapacity: Int,
-                              val numberOfSeats: Int) : Transport() {
+                              val numberOfSeats: Int) : Transport(), CheckOrder {
 
     override val brand = _brand
     override val model = _model
@@ -191,10 +199,10 @@ class CargoPassengerTransport(_brand: String,
         private set
 
     override fun refuel() {
-        println("Бак $brand $model полностью заправлен")
+       super.refuel()
     }
     override fun repair() {
-        println("Выполнено техническое обслуживание и ремонт $brand $model")
+        super.repair()
     }
     override fun freePlace() {
         println("В транспорт можно загрузить еще $remainingCarryingCapacity кг, а свобоных мест осталось $remainingNumberOfSeats  ")
@@ -239,7 +247,7 @@ class CargoPassengerTransport(_brand: String,
     }
 }
 
-class CarPark (private val transport: List<Transport>) {
+class CarPark (private val transport: List<Transport>) : CheckOrder {
 
     private val pendingOrders: MutableSet<Order> = mutableSetOf()
 
@@ -417,7 +425,11 @@ class CarPark (private val transport: List<Transport>) {
         processingPendingOrders()
 
         }
+
+    override fun checkOrder() {
+        println("$${LoadedOrders.loadedOrders}")
     }
+}
 
 fun main() {
     val order1 = Order("Заказ1", "Минск", "Гомель", cargoWeightKg = 2450, cargoType = "Продукты" )
@@ -450,7 +462,9 @@ fun main() {
     val listAutoPark = listOf<Transport>(auto1, auto2, auto3, auto4, auto5, auto6, auto7, auto8, auto9, auto10, auto11, auto12, auto13, auto14)
 
     val carPark = CarPark(listAutoPark)
-    carPark.auto(listOrder)
+   // carPark.auto(listOrder)
+
+    carPark.checkOrder()
 }
 
 
