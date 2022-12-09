@@ -40,5 +40,5 @@ fun main() {
     println(groupOtrezokY1)
 
 
-    232
+    232авпвапвп
 }
