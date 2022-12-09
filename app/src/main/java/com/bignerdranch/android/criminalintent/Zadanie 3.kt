@@ -40,4 +40,5 @@ fun main() {
     println(groupOtrezokY1)
 
     //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
+    232
 }
