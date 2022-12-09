@@ -39,5 +39,5 @@ fun main() {
 
     println(groupOtrezokY1)
 
-    //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
+    //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    1
 }
