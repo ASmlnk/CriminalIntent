@@ -37,7 +37,7 @@ fun main() {
     val groupOtrezokY1 = groupOtrezokY?.groupBy {it.startY}
 
 
-    println(groupOtrezokY1)
+    println(groupOtrezokY1) //
 
-    //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
+
 }
